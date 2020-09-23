@@ -8,9 +8,9 @@ import (
 	"golang.org/x/tools/go/ast/inspector"
 )
 
-const doc = "nofieldname is ..."
+const doc = "nofieldname finds struct created without field name"
 
-// Analyzer is ...
+// Analyzer finds struct created without field name
 var Analyzer = &analysis.Analyzer{
 	Name: "nofieldname",
 	Doc:  doc,
@@ -23,15 +23,15 @@ var Analyzer = &analysis.Analyzer{
 func run(pass *analysis.Pass) (interface{}, error) {
 	inspect := pass.ResultOf[inspect.Analyzer].(*inspector.Inspector)
 
-	nodeFilter := []ast.Node{
-		(*ast.Ident)(nil),
-	}
+	inspect.Preorder(nil, func(n ast.Node) {
+		c, ok := n.(*ast.CompositeLit)
+		if !ok {
+			return
+		}
 
-	inspect.Preorder(nodeFilter, func(n ast.Node) {
-		switch n := n.(type) {
-		case *ast.Ident:
-			if n.Name == "gopher" {
-				pass.Reportf(n.Pos(), "identifier is gopher")
+		for _, e := range c.Elts {
+			if _, ok := e.(*ast.KeyValueExpr); !ok {
+				pass.Reportf(e.Pos(), "field name is missing")
 			}
 		}
 	})
