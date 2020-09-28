@@ -28,6 +28,9 @@ func run(pass *analysis.Pass) (interface{}, error) {
 		if !ok {
 			return
 		}
+		if !isDeclTypeStruct(c) {
+			return
+		}
 
 		for _, e := range c.Elts {
 			if _, ok := e.(*ast.KeyValueExpr); !ok {
@@ -37,4 +40,24 @@ func run(pass *analysis.Pass) (interface{}, error) {
 	})
 
 	return nil, nil
+}
+
+func isDeclTypeStruct(c *ast.CompositeLit) bool {
+	switch t := c.Type.(type) {
+	case *ast.Ident:
+		if t.Obj == nil {
+			return false
+		}
+		d, ok := t.Obj.Decl.(*ast.TypeSpec)
+		if !ok {
+			return false
+		}
+		if _, ok := d.Type.(*ast.StructType); !ok {
+			return false
+		}
+	default:
+		return false
+	}
+
+	return true
 }

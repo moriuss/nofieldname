@@ -76,3 +76,35 @@ func ng2T3() {
 	}
 	fmt.Println(t3)
 }
+
+type ss []string
+
+func okSlice() {
+	a := ss{
+		"a",
+		"b",
+		"c",
+	}
+	fmt.Println(a)
+}
+
+func ok2Slice() {
+	b := []int{1, 2, 3}
+	fmt.Println(b)
+}
+
+func ok3Slice() {
+	f := func(ss []string) {
+		fmt.Println(ss)
+	}
+	f([]string{
+		"a",
+		"b",
+		"c",
+	})
+}
+
+var ok4Slice = [][]string{
+	{"a", "b"},
+	{"c", "d"},
+}
