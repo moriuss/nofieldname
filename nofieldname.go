@@ -55,9 +55,9 @@ func isDeclTypeStruct(c *ast.CompositeLit) bool {
 		if _, ok := d.Type.(*ast.StructType); !ok {
 			return false
 		}
+
+		return true
 	default:
 		return false
 	}
-
-	return true
 }
