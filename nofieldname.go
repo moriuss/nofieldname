@@ -2,7 +2,9 @@ package nofieldname
 
 import (
 	"go/ast"
+	"go/token"
 	"go/types"
+	"strings"
 
 	"github.com/gostaticanalysis/analysisutil"
 	"golang.org/x/tools/go/analysis"
@@ -29,6 +31,9 @@ func run(pass *analysis.Pass) (interface{}, error) {
 	}
 
 	inspect.Preorder(filter, func(n ast.Node) {
+		if isTestFile(pass, n.Pos()) {
+			return
+		}
 		c, ok := n.(*ast.CompositeLit)
 		if !ok {
 			return
@@ -45,6 +50,12 @@ func run(pass *analysis.Pass) (interface{}, error) {
 	})
 
 	return nil, nil
+}
+
+func isTestFile(pass *analysis.Pass, p token.Pos) bool {
+	f := pass.Fset.File(p)
+
+	return strings.HasSuffix(f.Name(), "test.go")
 }
 
 func isDeclTypeStruct(pass *analysis.Pass, c *ast.CompositeLit) bool {
