@@ -108,3 +108,23 @@ var ok4Slice = [][]string{
 	{"a", "b"},
 	{"c", "d"},
 }
+
+func ngTypesNamed() {
+	type T4 struct {
+		Pub string
+	}
+	type T5 T4
+	t := T5{"hoge"} // want "field name is missing"
+	fmt.Print(t)
+}
+
+func ngPointer() {
+	type T4 struct {
+		Pub string
+	}
+	type T5 T4
+	t := &T5{"hoge"} // want "field name is missing"
+	fmt.Print(t)
+}
+
+var _ = struct{ N int }{100} // want "field name is missing"

@@ -2,7 +2,9 @@ package nofieldname
 
 import (
 	"go/ast"
+	"go/types"
 
+	"github.com/gostaticanalysis/analysisutil"
 	"golang.org/x/tools/go/analysis"
 	"golang.org/x/tools/go/analysis/passes/inspect"
 	"golang.org/x/tools/go/ast/inspector"
@@ -22,13 +24,16 @@ var Analyzer = &analysis.Analyzer{
 
 func run(pass *analysis.Pass) (interface{}, error) {
 	inspect := pass.ResultOf[inspect.Analyzer].(*inspector.Inspector)
+	filter := []ast.Node{
+		(*ast.CompositeLit)(nil),
+	}
 
-	inspect.Preorder(nil, func(n ast.Node) {
+	inspect.Preorder(filter, func(n ast.Node) {
 		c, ok := n.(*ast.CompositeLit)
 		if !ok {
 			return
 		}
-		if !isDeclTypeStruct(c) {
+		if !isDeclTypeStruct(pass, c) {
 			return
 		}
 
@@ -42,22 +47,8 @@ func run(pass *analysis.Pass) (interface{}, error) {
 	return nil, nil
 }
 
-func isDeclTypeStruct(c *ast.CompositeLit) bool {
-	switch t := c.Type.(type) {
-	case *ast.Ident:
-		if t.Obj == nil {
-			return false
-		}
-		d, ok := t.Obj.Decl.(*ast.TypeSpec)
-		if !ok {
-			return false
-		}
-		if _, ok := d.Type.(*ast.StructType); !ok {
-			return false
-		}
+func isDeclTypeStruct(pass *analysis.Pass, c *ast.CompositeLit) bool {
+	_, ok := analysisutil.Under(pass.TypesInfo.TypeOf(c)).(*types.Struct)
 
-		return true
-	default:
-		return false
-	}
+	return ok
 }
